@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLKR Text</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'rich-black': '#020D19',
+                        'dark-gray': '#677784',
+                        'light-gray': '#ABB9C2',
+                        'extra-light': '#E3E9EF',
+                        'off-white': '#FAFAFA',
+                        'muted-blue': '#3B82F6',
+                    },
+                    fontFamily: {
+                        sans: ['Open Sans', 'sans-serif'],
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        :root {
+            --bg-primary: #020D19;
+            --bg-secondary: rgba(2, 13, 25, 0.5);
+            --text-primary: #FAFAFA;
+            --text-secondary: #677784;
+            --text-muted: #ABB9C2;
+            --border-color: rgba(103, 119, 132, 0.3);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #FAFAFA;
+            --bg-secondary: rgba(227, 233, 239, 0.5);
+            --text-primary: #020D19;
+            --text-secondary: #677784;
+            --text-muted: #677784;
+            --border-color: #E3E9EF;
+        }
+
+        * {
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--text-secondary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3B82F6;
+        }
+
+        /* Textarea styling - key for Grammarly */
+        #editor {
+            display: inline-block;
+            width: 100%;
+            min-height: calc(100vh - 180px);
+            resize: none;
+            outline: none;
+            border: none;
+            background: transparent;
+            color: var(--text-primary);
+            caret-color: #3B82F6;
+            font-size: 16px;
+            line-height: 1.75;
+            padding: 24px;
+        }
+
+        #editor::placeholder {
+            color: var(--text-secondary);
+        }
+
+        /* Markdown preview styling */
+        .prose {
+            color: var(--text-primary);
+        }
+
+        .prose h1 {
+            font-size: 2em;
+            font-weight: 700;
+            margin: 0.67em 0;
+        }
+
+        .prose h2 {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin: 0.75em 0;
+        }
+
+        .prose h3 {
+            font-size: 1.25em;
+            font-weight: 600;
+            margin: 0.83em 0;
+        }
+
+        .prose p {
+            margin: 1em 0;
+            line-height: 1.6;
+        }
+
+        .prose ul,
+        .prose ol {
+            margin: 1em 0;
+            padding-left: 2em;
+        }
+
+        .prose li {
+            margin: 0.5em 0;
+        }
+
+        .prose code {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 0.2em 0.4em;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .prose pre {
+            background: rgba(59, 130, 246, 0.1);
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .prose pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        .prose blockquote {
+            border-left: 4px solid #3B82F6;
+            padding-left: 1em;
+            margin: 1em 0;
+            opacity: 0.8;
+        }
+
+        .prose a {
+            color: #3B82F6;
+            text-decoration: underline;
+        }
+
+        .prose hr {
+            border: none;
+            border-top: 1px solid currentColor;
+            opacity: 0.2;
+            margin: 2em 0;
+        }
+
+        .prose table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1em 0;
+        }
+
+        .prose th,
+        .prose td {
+            border: 1px solid currentColor;
+            padding: 0.5em;
+            opacity: 0.8;
+        }
+
+        /* Dropdown styling */
+        .dropdown-menu {
+            display: none;
+        }
+
+        .dropdown:hover .dropdown-menu,
+        .dropdown:focus-within .dropdown-menu {
+            display: block;
+        }
+
+        /* Theme-aware components */
+        .header-bg {
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+        }
+
+        .toolbar-bg {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        .footer-bg {
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+        }
+
+        .dropdown-bg {
+            background-color: var(--bg-primary);
+            border-color: var(--border-color);
+        }
+
+        .text-theme-primary {
+            color: var(--text-primary);
+        }
+
+        .text-theme-secondary {
+            color: var(--text-secondary);
+        }
+
+        .text-theme-muted {
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header-bg sticky top-0 z-10 flex items-center justify-between px-4 py-3 border-b">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-semibold text-theme-primary">DLKR Text</h1>
+            <span id="saveIndicator" class="text-xs text-theme-secondary opacity-0 transition-opacity">Saved</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <!-- Mode Toggle -->
+            <button id="modeToggle"
+                class="px-3 py-1.5 text-sm rounded-md bg-muted-blue/10 text-muted-blue hover:bg-muted-blue/20 transition-colors">
+                <span id="modeLabel">Edit</span>
+            </button>
+
+            <!-- Theme Toggle -->
+            <button id="themeToggle"
+                class="p-2 rounded-md text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors"
+                title="Toggle theme">
+                <svg id="sunIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg id="moonIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Toolbar -->
+    <div class="toolbar-bg sticky top-[52px] z-10 flex flex-wrap items-center gap-1 px-4 py-2 border-b">
+
+        <!-- Undo/Redo -->
+        <div class="flex items-center gap-1 pr-2 border-r border-dark-gray/30">
+            <button onclick="undo()"
+                class="p-1.5 rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors"
+                title="Undo (Cmd/Ctrl+Z)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+            </button>
+            <button onclick="redo()"
+                class="p-1.5 rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors"
+                title="Redo (Cmd/Ctrl+Shift+Z)">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Clear Button -->
+        <button onclick="clearEditor()"
+            class="px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors"
+            title="Clear all content">
+            Clear
+        </button>
+
+        <div class="w-px h-6 bg-dark-gray/30 mx-1"></div>
+
+        <!-- Title Case Dropdown -->
+        <div class="relative dropdown">
+            <button
+                class="flex items-center gap-1 px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors">
+                Title Case
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div
+                class="dropdown-menu dropdown-bg absolute left-0 top-full mt-1 py-1 min-w-[140px] rounded-md shadow-lg border z-50">
+                <button onclick="applyTitleCase('ama')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">AMA</button>
+                <button onclick="applyTitleCase('ap')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">AP</button>
+                <button onclick="applyTitleCase('apa')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">APA</button>
+                <button onclick="applyTitleCase('chicago')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Chicago</button>
+                <button onclick="applyTitleCase('mla')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">MLA</button>
+            </div>
+        </div>
+
+        <!-- List Formatting -->
+        <div class="relative dropdown">
+            <button
+                class="flex items-center gap-1 px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors">
+                Lists
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div
+                class="dropdown-menu dropdown-bg absolute left-0 top-full mt-1 py-1 min-w-[140px] rounded-md shadow-lg border z-50">
+                <button onclick="applyList('bullet')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">•
+                    Bullet List</button>
+                <button onclick="applyList('numbered')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">1.
+                    Numbered List</button>
+            </div>
+        </div>
+
+        <!-- Slugify -->
+        <button onclick="applySlugify()"
+            class="px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors">
+            Slugify
+        </button>
+
+        <!-- Sort/Filter -->
+        <div class="relative dropdown">
+            <button
+                class="flex items-center gap-1 px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors">
+                Sort
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div
+                class="dropdown-menu dropdown-bg absolute left-0 top-full mt-1 py-1 min-w-[160px] rounded-md shadow-lg border z-50">
+                <button onclick="applySort('az')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">A
+                    → Z</button>
+                <button onclick="applySort('za')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Z
+                    → A</button>
+                <button onclick="applySort('short')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Short
+                    → Long</button>
+                <button onclick="applySort('long')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Long
+                    → Short</button>
+                <hr class="my-1 border-dark-gray/30">
+                <button onclick="applySort('dedupe')"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Remove
+                    Duplicates</button>
+            </div>
+        </div>
+
+        <div class="w-px h-6 bg-dark-gray/30 mx-1"></div>
+
+        <!-- Copy/Export -->
+        <div class="relative dropdown">
+            <button
+                class="flex items-center gap-1 px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors">
+                Copy
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div
+                class="dropdown-menu dropdown-bg absolute left-0 top-full mt-1 py-1 min-w-[180px] rounded-md shadow-lg border z-50">
+                <button onclick="copyAsMarkdown()"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Copy
+                    as Markdown</button>
+                <button onclick="copyAsHTML()"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Copy
+                    as HTML Code</button>
+                <button onclick="copyAsRichText()"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Copy
+                    as Rich Text</button>
+            </div>
+        </div>
+
+        <!-- Paste MD -->
+        <button onclick="pasteAsMarkdown()"
+            class="px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors">
+            Paste MD
+        </button>
+    </div>
+
+    <!-- Editor Area - Simple container with max-width -->
+    <main class="max-w-4xl mx-auto">
+        <!-- Textarea Editor - inline-block, static position for Grammarly -->
+        <textarea id="editor" name="content" placeholder="Start writing..." spellcheck="true" autocomplete="off"
+            autocorrect="off" autocapitalize="off"></textarea>
+
+        <!-- Markdown Preview -->
+        <div id="preview" class="prose p-6 min-h-[calc(100vh-180px)] hidden"></div>
+    </main>
+
+    <!-- Footer Stats -->
+    <footer
+        class="footer-bg sticky bottom-0 flex flex-wrap items-center justify-between gap-2 px-4 py-2 text-xs text-theme-secondary border-t">
+        <div class="flex flex-wrap items-center gap-4">
+            <span><span id="charCount">0</span> characters</span>
+            <span><span id="wordCount">0</span> words</span>
+            <span><span id="lineCount">0</span> lines</span>
+            <span><span id="sentenceCount">0</span> sentences</span>
+            <span><span id="paraCount">0</span> paragraphs</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <span id="historyInfo" class="opacity-50">History: 0/0</span>
+        </div>
+    </footer>
+
+    <script>
+        // ===== DOM Elements =====
+        const editor = document.getElementById('editor');
+        const preview = document.getElementById('preview');
+        const modeToggle = document.getElementById('modeToggle');
+        const modeLabel = document.getElementById('modeLabel');
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const saveIndicator = document.getElementById('saveIndicator');
+
+        // Stats elements
+        const charCount = document.getElementById('charCount');
+        const wordCount = document.getElementById('wordCount');
+        const lineCount = document.getElementById('lineCount');
+        const sentenceCount = document.getElementById('sentenceCount');
+        const paraCount = document.getElementById('paraCount');
+        const historyInfo = document.getElementById('historyInfo');
+
+        // ===== State =====
+        let isPreviewMode = false;
+        // Default to dark mode unless explicitly set to light
+        const savedTheme = localStorage.getItem('dlkr-theme');
+        let isDarkMode = savedTheme === null || savedTheme === 'dark';
+
+        // Undo/Redo History
+        const MAX_HISTORY = 50;
+        let history = [];
+        let historyIndex = -1;
+        let isUndoRedo = false;
+
+        // ===== Initialize =====
+        function init() {
+            // Load saved content
+            const savedContent = localStorage.getItem('dlkr-content');
+            if (savedContent) {
+                editor.value = savedContent;
+            }
+
+            // Apply theme
+            applyTheme();
+
+            // Update stats
+            updateStats();
+
+            // Initialize history with current state
+            pushHistory();
+
+            // Focus editor
+            editor.focus();
+        }
+
+        // ===== Theme =====
+        function applyTheme() {
+            if (isDarkMode) {
+                document.body.removeAttribute('data-theme');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+            localStorage.setItem('dlkr-theme', isDarkMode ? 'dark' : 'light');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            applyTheme();
+        });
+
+        // ===== Mode Toggle =====
+        modeToggle.addEventListener('click', () => {
+            isPreviewMode = !isPreviewMode;
+            if (isPreviewMode) {
+                modeLabel.textContent = 'Preview';
+                preview.innerHTML = marked.parse(editor.value);
+                preview.classList.remove('hidden');
+                editor.style.display = 'none';
+            } else {
+                modeLabel.textContent = 'Edit';
+                preview.classList.add('hidden');
+                editor.style.display = 'inline-block';
+                editor.focus();
+            }
+        });
+
+        // ===== Stats =====
+        function updateStats() {
+            const text = editor.value;
+
+            // Characters
+            charCount.textContent = text.length;
+
+            // Words
+            const words = text.trim() ? text.trim().split(/\s+/).filter(w => w.length > 0) : [];
+            wordCount.textContent = words.length;
+
+            // Lines
+            const lines = text.split('\n');
+            lineCount.textContent = lines.length;
+
+            // Sentences (split by . ! ?)
+            const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+            sentenceCount.textContent = sentences.length;
+
+            // Paragraphs (blank line separated)
+            const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+            paraCount.textContent = paragraphs.length;
+
+            // History info
+            historyInfo.textContent = `History: ${historyIndex + 1}/${history.length}`;
+        }
+
+        // ===== Auto-save with debounce =====
+        let saveTimeout;
+        function debouncedSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                localStorage.setItem('dlkr-content', editor.value);
+                saveIndicator.classList.remove('opacity-0');
+                saveIndicator.classList.add('opacity-100');
+                setTimeout(() => {
+                    saveIndicator.classList.remove('opacity-100');
+                    saveIndicator.classList.add('opacity-0');
+                }, 1500);
+            }, 500);
+        }
+
+        // ===== History Management =====
+        function pushHistory() {
+            if (isUndoRedo) return;
+
+            // Remove any redo states
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+
+            // Add current state
+            history.push({
+                content: editor.value,
+                selectionStart: editor.selectionStart,
+                selectionEnd: editor.selectionEnd
+            });
+
+            // Limit history size
+            if (history.length > MAX_HISTORY) {
+                history.shift();
+            } else {
+                historyIndex++;
+            }
+
+            updateStats();
+        }
+
+        let historyTimeout;
+        function debouncedHistory() {
+            clearTimeout(historyTimeout);
+            historyTimeout = setTimeout(pushHistory, 300);
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                isUndoRedo = true;
+                historyIndex--;
+                const state = history[historyIndex];
+                editor.value = state.content;
+                editor.setSelectionRange(state.selectionStart, state.selectionEnd);
+                updateStats();
+                debouncedSave();
+                isUndoRedo = false;
+                editor.focus();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                isUndoRedo = true;
+                historyIndex++;
+                const state = history[historyIndex];
+                editor.value = state.content;
+                editor.setSelectionRange(state.selectionStart, state.selectionEnd);
+                updateStats();
+                debouncedSave();
+                isUndoRedo = false;
+                editor.focus();
+            }
+        }
+
+        // ===== Clear Editor =====
+        function clearEditor() {
+            if (editor.value && confirm('Are you sure you want to clear all content?')) {
+                editor.value = '';
+                pushHistory();
+                updateStats();
+                debouncedSave();
+                editor.focus();
+            }
+        }
+
+        // ===== Editor Events =====
+        editor.addEventListener('input', () => {
+            updateStats();
+            debouncedSave();
+            debouncedHistory();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+            const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+            if (modKey && e.key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                undo();
+            } else if (modKey && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+                e.preventDefault();
+                redo();
+            }
+        });
+
+        // ===== Text Tools Helpers =====
+        function getTextAndSelection() {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const hasSelection = start !== end;
+            const text = hasSelection ? editor.value.substring(start, end) : editor.value;
+            return { text, start, end, hasSelection };
+        }
+
+        function applyTransform(transformFn) {
+            const { text, start, end, hasSelection } = getTextAndSelection();
+            const transformed = transformFn(text);
+
+            if (hasSelection) {
+                editor.setRangeText(transformed, start, end, 'select');
+            } else {
+                editor.value = transformed;
+                editor.setSelectionRange(0, transformed.length);
+            }
+
+            pushHistory();
+            updateStats();
+            debouncedSave();
+            editor.focus();
+        }
+
+        // ===== Title Case =====
+        const ABBREVIATIONS = new Set([
+            'API', 'HTML', 'CSS', 'JS', 'URL', 'HTTP', 'HTTPS', 'REST', 'SQL', 'JSON', 'XML',
+            'USA', 'UK', 'EU', 'UN', 'NATO', 'NASA', 'FBI', 'CIA', 'CEO', 'CFO', 'CTO', 'COO',
+            'PhD', 'MBA', 'MD', 'RN', 'BA', 'BS', 'MS', 'MA', 'JD', 'DDS', 'CPA', 'CFA',
+            'TV', 'DVD', 'CD', 'PC', 'MAC', 'iOS', 'AI', 'ML', 'VR', 'AR', 'IoT', 'SaaS',
+            'FAQ', 'DIY', 'ASAP', 'FYI', 'TBD', 'TBA', 'ETA', 'RSVP', 'PS', 'PDF', 'USB',
+            'NYC', 'LA', 'SF', 'DC', 'UK', 'UAE', 'GDP', 'GPA', 'SAT', 'ACT', 'GRE', 'GMAT',
+            'HR', 'PR', 'VP', 'SVP', 'EVP', 'CMO', 'CIO', 'CISO', 'IT', 'QA', 'UI', 'UX',
+            'B2B', 'B2C', 'ROI', 'KPI', 'OKR', 'SEO', 'SEM', 'PPC', 'CRM', 'ERP', 'AWS', 'GCP',
+            'SMS', 'MMS', 'GPS', 'ATM', 'PIN', 'ID', 'AM', 'PM', 'BC', 'AD', 'RSVP', 'BYOB',
+            'LLC', 'INC', 'LTD', 'PLC', 'IPO', 'NYSE', 'NASDAQ', 'ETF', 'IRA', 'APR', 'APY',
+            'WIFI', 'LAN', 'WAN', 'VPN', 'FTP', 'SSH', 'TCP', 'IP', 'DNS', 'RAM', 'ROM', 'SSD',
+            'LED', 'LCD', 'HDMI', 'USB', 'JPEG', 'PNG', 'GIF', 'MP3', 'MP4', 'AVI', 'MOV'
+        ]);
+
+        // Words to keep lowercase (varies by style)
+        const STYLE_LOWERCASE = {
+            ama: ['a', 'an', 'the', 'and', 'but', 'or', 'for', 'nor', 'as', 'at', 'by', 'for', 'from', 'in', 'into', 'of', 'off', 'on', 'onto', 'per', 'to', 'up', 'via', 'with'],
+            ap: ['a', 'an', 'the', 'and', 'but', 'for', 'or', 'nor', 'at', 'by', 'for', 'from', 'in', 'of', 'off', 'on', 'to', 'up', 'with'],
+            apa: ['a', 'an', 'the', 'and', 'as', 'but', 'by', 'for', 'if', 'in', 'nor', 'of', 'off', 'on', 'or', 'per', 'so', 'to', 'up', 'via', 'yet'],
+            chicago: ['a', 'an', 'the', 'and', 'but', 'for', 'or', 'nor', 'as', 'at', 'by', 'for', 'from', 'in', 'into', 'of', 'off', 'on', 'onto', 'out', 'over', 'per', 'to', 'up', 'upon', 'via', 'with'],
+            mla: ['a', 'an', 'the', 'and', 'but', 'for', 'or', 'nor', 'as', 'at', 'by', 'for', 'from', 'in', 'into', 'of', 'off', 'on', 'onto', 'out', 'over', 'past', 'per', 'to', 'up', 'upon', 'via', 'with']
+        };
+
+        function toTitleCase(text, style = 'chicago') {
+            const lowercase = new Set(STYLE_LOWERCASE[style] || STYLE_LOWERCASE.chicago);
+
+            return text.split('\n').map(line => {
+                const words = line.split(/(\s+)/);
+                return words.map((word, index, arr) => {
+                    // Skip whitespace
+                    if (/^\s+$/.test(word)) return word;
+
+                    // Extract leading/trailing punctuation
+                    const leadingMatch = word.match(/^([^a-zA-Z0-9]*)/);
+                    const trailingMatch = word.match(/([^a-zA-Z0-9]*)$/);
+                    const leading = leadingMatch ? leadingMatch[1] : '';
+                    const trailing = trailingMatch ? trailingMatch[1] : '';
+                    const core = word.slice(leading.length, word.length - trailing.length || undefined);
+
+                    // Skip if no alphabetic content
+                    if (!core) return word;
+
+                    // Check if core is an abbreviation (case-insensitive)
+                    const upperCore = core.toUpperCase();
+                    if (ABBREVIATIONS.has(upperCore)) {
+                        return leading + upperCore + trailing;
+                    }
+
+                    // Handle hyphenated words
+                    if (core.includes('-')) {
+                        const hyphenated = core.split('-').map((part, i) => {
+                            const upperPart = part.toUpperCase();
+                            if (ABBREVIATIONS.has(upperPart)) return upperPart;
+                            if (i > 0 && lowercase.has(part.toLowerCase())) return part.toLowerCase();
+                            return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+                        }).join('-');
+                        return leading + hyphenated + trailing;
+                    }
+
+                    // First word in sentence always capitalized
+                    const prevWords = arr.slice(0, index).filter(w => !/^\s+$/.test(w));
+                    const isFirst = prevWords.length === 0 ||
+                        (prevWords.length > 0 && /[.!?:]\s*$/.test(prevWords[prevWords.length - 1]));
+
+                    // Last word always capitalized
+                    const nextWords = arr.slice(index + 1).filter(w => !/^\s+$/.test(w));
+                    const isLast = nextWords.length === 0;
+
+                    if (isFirst || isLast) {
+                        return leading + core.charAt(0).toUpperCase() + core.slice(1).toLowerCase() + trailing;
+                    }
+
+                    // Check if should be lowercase
+                    if (lowercase.has(core.toLowerCase())) {
+                        return leading + core.toLowerCase() + trailing;
+                    }
+
+                    // Default: capitalize first letter
+                    return leading + core.charAt(0).toUpperCase() + core.slice(1).toLowerCase() + trailing;
+                }).join('');
+            }).join('\n');
+        }
+
+        function applyTitleCase(style) {
+            applyTransform(text => toTitleCase(text, style));
+        }
+
+        // ===== List Formatting =====
+        function applyList(type) {
+            applyTransform(text => {
+                const lines = text.split('\n').filter(line => line.trim());
+                return lines.map((line, i) => {
+                    // Remove existing list markers
+                    const cleanLine = line.replace(/^[\s]*[-*•][\s]+|^[\s]*\d+[.)]\s+/g, '').trim();
+                    if (type === 'bullet') {
+                        return `• ${cleanLine}`;
+                    } else {
+                        return `${i + 1}. ${cleanLine}`;
+                    }
+                }).join('\n');
+            });
+        }
+
+        // ===== Slugify =====
+        function applySlugify() {
+            applyTransform(text => {
+                return text
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+                    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                    .replace(/\s+/g, '-') // Spaces to hyphens
+                    .replace(/-+/g, '-') // Multiple hyphens to single
+                    .replace(/^-|-$/g, ''); // Trim hyphens
+            });
+        }
+
+        // ===== Sort/Filter =====
+        function applySort(type) {
+            applyTransform(text => {
+                let lines = text.split('\n');
+
+                switch (type) {
+                    case 'az':
+                        lines.sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+                        break;
+                    case 'za':
+                        lines.sort((a, b) => b.localeCompare(a, undefined, { sensitivity: 'base' }));
+                        break;
+                    case 'short':
+                        lines.sort((a, b) => a.length - b.length);
+                        break;
+                    case 'long':
+                        lines.sort((a, b) => b.length - a.length);
+                        break;
+                    case 'dedupe':
+                        lines = [...new Set(lines)];
+                        break;
+                }
+
+                return lines.join('\n');
+            });
+        }
+
+        // ===== Copy/Export =====
+        async function copyAsMarkdown() {
+            const { text } = getTextAndSelection();
+            await navigator.clipboard.writeText(text);
+            showToast('Copied as Markdown');
+        }
+
+        async function copyAsHTML() {
+            const { text } = getTextAndSelection();
+            const html = marked.parse(text);
+            await navigator.clipboard.writeText(html);
+            showToast('Copied as HTML code');
+        }
+
+        async function copyAsRichText() {
+            const { text } = getTextAndSelection();
+            const html = marked.parse(text);
+
+            try {
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'text/html': new Blob([html], { type: 'text/html' }),
+                        'text/plain': new Blob([text], { type: 'text/plain' })
+                    })
+                ]);
+                showToast('Copied as Rich Text');
+            } catch (err) {
+                // Fallback: copy as plain text
+                await navigator.clipboard.writeText(text);
+                showToast('Copied (rich text not supported)');
+            }
+        }
+
+        async function pasteAsMarkdown() {
+            try {
+                const clipboardItems = await navigator.clipboard.read();
+                for (const item of clipboardItems) {
+                    if (item.types.includes('text/html')) {
+                        const blob = await item.getType('text/html');
+                        const html = await blob.text();
+                        const turndownService = new TurndownService({
+                            headingStyle: 'atx',
+                            codeBlockStyle: 'fenced'
+                        });
+                        const markdown = turndownService.turndown(html);
+
+                        // Insert at cursor position
+                        const start = editor.selectionStart;
+                        const end = editor.selectionEnd;
+                        editor.setRangeText(markdown, start, end, 'end');
+
+                        pushHistory();
+                        updateStats();
+                        debouncedSave();
+                        showToast('Pasted as Markdown');
+                        editor.focus();
+                        return;
+                    }
+                }
+
+                // Fallback to plain text
+                const text = await navigator.clipboard.readText();
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                editor.setRangeText(text, start, end, 'end');
+
+                pushHistory();
+                updateStats();
+                debouncedSave();
+                showToast('Pasted as plain text');
+                editor.focus();
+            } catch (err) {
+                console.error('Paste failed:', err);
+                showToast('Paste failed - check permissions');
+            }
+        }
+
+        // ===== Toast Notification =====
+        function showToast(message) {
+            // Remove existing toast
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast fixed bottom-20 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-lg text-sm bg-muted-blue text-white shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        // ===== Initialize =====
+        init();
+    </script>
+</body>
+
+</html>
