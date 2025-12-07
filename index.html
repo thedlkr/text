@@ -858,6 +858,27 @@
         }
 
         async function pasteAsMarkdown() {
+            // Smart punctuation escaping to match clipboard2markdown behavior
+            // http://pandoc.org/README.html#smart-punctuation
+            function escapeSmartPunctuation(str) {
+                return str
+                    .replace(/[\u2018\u2019\u00b4]/g, "'")     // Smart single quotes → '
+                    .replace(/[\u201c\u201d\u2033]/g, '"')     // Smart double quotes → "
+                    .replace(/[\u2212\u2022\u00b7\u25aa]/g, '-') // Bullets/minus → -
+                    .replace(/[\u2013\u2015]/g, '--')          // En dash → --
+                    .replace(/\u2014/g, '---')                 // Em dash → ---
+                    .replace(/\u2026/g, '...')                 // Ellipsis → ...
+                    .replace(/[ ]+\n/g, '\n')                  // Trailing spaces
+                    .replace(/\s*\\\n/g, '\\\n')               // Preserve line breaks
+                    .replace(/\s*\\\n\s*\\\n/g, '\n\n')        // Double breaks
+                    .replace(/\s*\\\n\n/g, '\n\n')
+                    .replace(/\n-\n/g, '\n')
+                    .replace(/\n\n\s*\\\n/g, '\n\n')
+                    .replace(/\n\n\n*/g, '\n\n')               // Max 2 newlines
+                    .replace(/[ ]+$/gm, '')                    // Trailing spaces per line
+                    .replace(/^\s+|[\s\\]+$/g, '');            // Trim start/end
+            }
+
             try {
                 const clipboardItems = await navigator.clipboard.read();
                 for (const item of clipboardItems) {
@@ -870,7 +891,8 @@
                         });
                         // Use GFM plugin for tables, strikethrough, etc.
                         turndownService.use(turndownPluginGfm.gfm);
-                        const markdown = turndownService.turndown(html);
+                        // Convert and escape smart punctuation
+                        const markdown = escapeSmartPunctuation(turndownService.turndown(html));
 
                         // Insert at cursor position
                         const start = editor.selectionStart;
@@ -902,6 +924,7 @@
                 showToast('Paste failed - check permissions');
             }
         }
+
 
         // ===== Toast Notification =====
         function showToast(message) {
