@@ -879,12 +879,58 @@
                     .replace(/^\s+|[\s\\]+$/g, '');            // Trim start/end
             }
 
+            // Pre-process HTML to fix tables without thead (e.g., from Google Sheets)
+            function preprocessTableHtml(html) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Find all tables
+                const tables = doc.querySelectorAll('table');
+                tables.forEach(table => {
+                    const tbody = table.querySelector('tbody');
+                    const thead = table.querySelector('thead');
+
+                    // If table has tbody but no thead, move first row to thead
+                    if (tbody && !thead && tbody.rows.length > 0) {
+                        const newThead = doc.createElement('thead');
+                        const firstRow = tbody.rows[0];
+
+                        // Clone the first row for thead
+                        const headerRow = firstRow.cloneNode(true);
+
+                        // Convert td to th in the header row
+                        const cells = headerRow.querySelectorAll('td');
+                        cells.forEach(td => {
+                            const th = doc.createElement('th');
+                            th.innerHTML = td.innerHTML;
+                            // Copy attributes
+                            Array.from(td.attributes).forEach(attr => {
+                                th.setAttribute(attr.name, attr.value);
+                            });
+                            td.parentNode.replaceChild(th, td);
+                        });
+
+                        newThead.appendChild(headerRow);
+                        table.insertBefore(newThead, tbody);
+
+                        // Remove the original first row from tbody
+                        tbody.deleteRow(0);
+                    }
+                });
+
+                return doc.body.innerHTML;
+            }
+
             try {
                 const clipboardItems = await navigator.clipboard.read();
                 for (const item of clipboardItems) {
                     if (item.types.includes('text/html')) {
                         const blob = await item.getType('text/html');
-                        const html = await blob.text();
+                        let html = await blob.text();
+
+                        // Pre-process tables without thead (Google Sheets, etc.)
+                        html = preprocessTableHtml(html);
+
                         const turndownService = new TurndownService({
                             headingStyle: 'atx',
                             codeBlockStyle: 'fenced'
