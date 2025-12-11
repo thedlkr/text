@@ -933,12 +933,42 @@
 
                         const turndownService = new TurndownService({
                             headingStyle: 'atx',
-                            codeBlockStyle: 'fenced'
+                            codeBlockStyle: 'fenced',
+                            blankReplacement: function(content, node) {
+                                // Return just newlines without extra blank lines
+                                return node.isBlock ? '\n' : '';
+                            }
                         });
                         // Use GFM plugin for tables, strikethrough, etc.
                         turndownService.use(turndownPluginGfm.gfm);
+
+                        // Custom rule for list items to prevent extra blank lines
+                        turndownService.addRule('listItem', {
+                            filter: 'li',
+                            replacement: function(content, node, options) {
+                                // Remove leading/trailing whitespace and collapse multiple newlines
+                                content = content
+                                    .replace(/^\n+/, '')
+                                    .replace(/\n+$/, '')
+                                    .replace(/\n\n+/g, '\n');
+
+                                // Indent nested content
+                                content = content.replace(/\n/g, '\n    ');
+
+                                let prefix = options.bulletListMarker + ' ';
+                                const parent = node.parentNode;
+                                if (parent.nodeName === 'OL') {
+                                    const start = parent.getAttribute('start');
+                                    const index = Array.prototype.indexOf.call(parent.children, node);
+                                    prefix = (start ? Number(start) + index : index + 1) + '. ';
+                                }
+
+                                return prefix + content + (node.nextSibling ? '\n' : '');
+                            }
+                        });
+
                         // Convert and escape smart punctuation
-                        const markdown = escapeSmartPunctuation(turndownService.turndown(html));
+                        const markdown = escapeSmartPunctuation(turndownService.turndown(html).trim());
 
                         // Insert at cursor position
                         const start = editor.selectionStart;
