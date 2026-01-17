@@ -309,6 +309,9 @@
                     class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">UPPERCASE</button>
                 <button onclick="applyLowercase()"
                     class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">lowercase</button>
+                <button onclick="applySentenceCase()"
+                    class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Sentence
+                    case</button>
                 <hr class="my-1 border-dark-gray/30">
                 <button onclick="applyTitleCase('ama')"
                     class="block w-full px-3 py-1.5 text-left text-sm text-theme-muted hover:bg-muted-blue/20 hover:text-theme-primary">Title
@@ -690,19 +693,243 @@
 
         // ===== Title Case =====
         const ABBREVIATIONS = new Set([
+            // Tech & Web
             'API', 'HTML', 'CSS', 'JS', 'URL', 'HTTP', 'HTTPS', 'REST', 'SQL', 'JSON', 'XML',
-            'USA', 'UK', 'EU', 'UN', 'NATO', 'NASA', 'FBI', 'CIA', 'CEO', 'CFO', 'CTO', 'COO',
-            'PhD', 'MBA', 'MD', 'RN', 'BA', 'BS', 'MS', 'MA', 'JD', 'DDS', 'CPA', 'CFA',
-            'TV', 'DVD', 'CD', 'PC', 'MAC', 'iOS', 'AI', 'ML', 'VR', 'AR', 'IoT', 'SaaS',
-            'FAQ', 'DIY', 'ASAP', 'FYI', 'TBD', 'TBA', 'ETA', 'RSVP', 'PS', 'PDF', 'USB',
-            'NYC', 'LA', 'SF', 'DC', 'UK', 'UAE', 'GDP', 'GPA', 'SAT', 'ACT', 'GRE', 'GMAT',
-            'HR', 'PR', 'VP', 'SVP', 'EVP', 'CMO', 'CIO', 'CISO', 'IT', 'QA', 'UI', 'UX',
-            'B2B', 'B2C', 'ROI', 'KPI', 'OKR', 'SEO', 'SEM', 'PPC', 'CRM', 'ERP', 'AWS', 'GCP',
-            'SMS', 'MMS', 'GPS', 'ATM', 'PIN', 'ID', 'AM', 'PM', 'BC', 'AD', 'RSVP', 'BYOB',
+            'SDK', 'CLI', 'GUI', 'IDE', 'AJAX', 'CDN', 'CMS', 'RSS', 'WYSIWYG', 'CRUD', 'ORM',
+            'NPM', 'PHP', 'ASP', 'JSX', 'TSX', 'SVG', 'CSV', 'YAML', 'TOML', 'WASM', 'PWA',
+            // AI & Computing
+            'AI', 'ML', 'NLP', 'LLM', 'GPT', 'AGI', 'CPU', 'GPU', 'TPU', 'NPC', 'RPG', 'DLC',
+            'VR', 'AR', 'XR', 'MR', 'IoT', 'SaaS', 'PaaS', 'IaaS', 'NFT', 'DAO', 'DeFi',
+            // Organizations & Government
+            'USA', 'UK', 'EU', 'UN', 'NATO', 'NASA', 'FBI', 'CIA', 'NSA', 'DOJ', 'DOD', 'EPA',
+            'FDA', 'FCC', 'SEC', 'IRS', 'WHO', 'IMF', 'WTO', 'OPEC', 'OECD', 'ICC', 'ICJ',
+            // Business & Titles
+            'CEO', 'CFO', 'CTO', 'COO', 'CMO', 'CIO', 'CISO', 'CSO', 'VP', 'SVP', 'EVP', 'MD',
+            'HR', 'PR', 'IR', 'IT', 'QA', 'PM', 'PO', 'BA', 'UX', 'UI', 'GM', 'ED', 'VP',
             'LLC', 'INC', 'LTD', 'PLC', 'IPO', 'NYSE', 'NASDAQ', 'ETF', 'IRA', 'APR', 'APY',
-            'WIFI', 'LAN', 'WAN', 'VPN', 'FTP', 'SSH', 'TCP', 'IP', 'DNS', 'RAM', 'ROM', 'SSD',
-            'LED', 'LCD', 'HDMI', 'USB', 'JPEG', 'PNG', 'GIF', 'MP3', 'MP4', 'AVI', 'MOV'
+            'B2B', 'B2C', 'D2C', 'ROI', 'KPI', 'OKR', 'MRR', 'ARR', 'LTV', 'CAC', 'NPS',
+            'SEO', 'SEM', 'PPC', 'CPC', 'CPM', 'CTR', 'CRM', 'ERP', 'SLA', 'NDA', 'MOU',
+            // Education & Degrees
+            'PhD', 'MBA', 'MFA', 'MPH', 'JD', 'DDS', 'DVM', 'EdD', 'CPA', 'CFA', 'ESQ',
+            'BA', 'BS', 'MS', 'MA', 'BFA', 'BSc', 'MSc', 'RN', 'LPN', 'GPA', 'SAT', 'ACT', 'GRE', 'GMAT', 'LSAT', 'MCAT',
+            // Media & Internet Culture
+            'TV', 'DVD', 'CD', 'HD', 'UHD', 'HDR', 'IMAX', 'DJ', 'MC', 'VJ', 'EP', 'LP', 'MV',
+            'ASMR', 'POV', 'IRL', 'AFK', 'BRB', 'TL;DR', 'TLDR', 'IMO', 'IMHO', 'OMG', 'LOL', 'LMAO', 'ROFL',
+            'DM', 'PM', 'RT', 'TBT', 'NSFW', 'SFW', 'AMA', 'TIL', 'ELI5', 'IIRC', 'AFAIK', 'GOAT',
+            // Social & Identity
+            'LGBTQ', 'LGBTQIA', 'BLM', 'POC', 'BIPOC', 'ADHD', 'OCD', 'PTSD', 'ASD', 'BPD',
+            // Locations
+            'NYC', 'LA', 'SF', 'DC', 'ATL', 'DFW', 'PHX', 'UK', 'UAE', 'HK', 'NZ', 'SA',
+            // Technical & Networking
+            'WIFI', 'LAN', 'WAN', 'VPN', 'FTP', 'SSH', 'TCP', 'IP', 'DNS', 'DHCP', 'NAT',
+            'RAM', 'ROM', 'SSD', 'HDD', 'NVMe', 'BIOS', 'UEFI', 'OS', 'VM', 'VPS', 'K8S',
+            'LED', 'LCD', 'OLED', 'AMOLED', 'HDMI', 'USB', 'NFC', 'BLE', 'QR',
+            // File Formats & Media
+            'JPEG', 'JPG', 'PNG', 'GIF', 'WEBP', 'HEIC', 'TIFF', 'BMP', 'ICO', 'RAW',
+            'MP3', 'MP4', 'AVI', 'MOV', 'MKV', 'WEBM', 'FLAC', 'WAV', 'AAC', 'OGG', 'M4A',
+            'PDF', 'DOC', 'DOCX', 'XLS', 'XLSX', 'PPT', 'PPTX', 'TXT', 'RTF', 'ZIP', 'RAR',
+            // Common Acronyms
+            'FAQ', 'DIY', 'ASAP', 'FYI', 'TBD', 'TBA', 'ETA', 'RSVP', 'PS', 'BYOB', 'RIP',
+            'SMS', 'MMS', 'GPS', 'ATM', 'PIN', 'ID', 'SSN', 'DOB', 'BC', 'AD', 'BCE', 'CE',
+            'AM', 'PM', 'AC', 'DC', 'RPM', 'MPH', 'KPH', 'PSI', 'BTU', 'PSU', 'UPS',
+            // Cloud & Services
+            'AWS', 'GCP', 'IBM', 'HP', 'HPE', 'SAP', 'VMW', 'OCI', 'CDN', 'S3', 'EC2', 'RDS',
+            // Sports
+            'NBA', 'NFL', 'MLB', 'NHL', 'MLS', 'UFC', 'WWE', 'FIFA', 'UEFA', 'IOC', 'ESPN', 'MVP'
         ]);
+
+        // Brand names with specific casing (maps uppercase to proper case)
+        const BRAND_CASING = {
+            'GITHUB': 'GitHub',
+            'YOUTUBE': 'YouTube',
+            'LINKEDIN': 'LinkedIn',
+            'TIKTOK': 'TikTok',
+            'INSTAGRAM': 'Instagram',
+            'FACEBOOK': 'Facebook',
+            'TWITTER': 'Twitter',
+            'WHATSAPP': 'WhatsApp',
+            'SNAPCHAT': 'Snapchat',
+            'PINTEREST': 'Pinterest',
+            'REDDIT': 'Reddit',
+            'DISCORD': 'Discord',
+            'SLACK': 'Slack',
+            'ZOOM': 'Zoom',
+            'SKYPE': 'Skype',
+            'TWITCH': 'Twitch',
+            'SPOTIFY': 'Spotify',
+            'NETFLIX': 'Netflix',
+            'HULU': 'Hulu',
+            'IPHONE': 'iPhone',
+            'IPAD': 'iPad',
+            'IPOD': 'iPod',
+            'IMAC': 'iMac',
+            'ITUNES': 'iTunes',
+            'ICLOUD': 'iCloud',
+            'IMESSAGE': 'iMessage',
+            'IOS': 'iOS',
+            'IPADOS': 'iPadOS',
+            'MACOS': 'macOS',
+            'WATCHOS': 'watchOS',
+            'TVOS': 'tvOS',
+            'VISIONOS': 'visionOS',
+            'AIRPODS': 'AirPods',
+            'AIRPLAY': 'AirPlay',
+            'AIRDROP': 'AirDrop',
+            'APPLETV': 'AppleTV',
+            'FACETIME': 'FaceTime',
+            'TOUCHID': 'TouchID',
+            'FACEID': 'FaceID',
+            'SIRI': 'Siri',
+            'ANDROID': 'Android',
+            'PLAYSTATION': 'PlayStation',
+            'XBOX': 'Xbox',
+            'NINTENDO': 'Nintendo',
+            'MINECRAFT': 'Minecraft',
+            'FORTNITE': 'Fortnite',
+            'ROBLOX': 'Roblox',
+            'POKEMON': 'Pokémon',
+            'GOOGLE': 'Google',
+            'GMAIL': 'Gmail',
+            'GDRIVE': 'GDrive',
+            'CHROMEBOOK': 'Chromebook',
+            'CHROMECAST': 'Chromecast',
+            'MICROSOFT': 'Microsoft',
+            'WINDOWS': 'Windows',
+            'OUTLOOK': 'Outlook',
+            'ONEDRIVE': 'OneDrive',
+            'ONENOTE': 'OneNote',
+            'POWERPOINT': 'PowerPoint',
+            'SHAREPOINT': 'SharePoint',
+            'LINKEDIN': 'LinkedIn',
+            'COPILOT': 'Copilot',
+            'CHATGPT': 'ChatGPT',
+            'OPENAI': 'OpenAI',
+            'MIDJOURNEY': 'Midjourney',
+            'WORDPRESS': 'WordPress',
+            'WOOCOMMERCE': 'WooCommerce',
+            'SHOPIFY': 'Shopify',
+            'SQUARESPACE': 'Squarespace',
+            'MAILCHIMP': 'Mailchimp',
+            'HUBSPOT': 'HubSpot',
+            'SALESFORCE': 'Salesforce',
+            'ZENDESK': 'Zendesk',
+            'DROPBOX': 'Dropbox',
+            'EVERNOTE': 'Evernote',
+            'NOTION': 'Notion',
+            'TRELLO': 'Trello',
+            'ASANA': 'Asana',
+            'JIRA': 'Jira',
+            'GITHUB': 'GitHub',
+            'GITLAB': 'GitLab',
+            'BITBUCKET': 'Bitbucket',
+            'STACKOVERFLOW': 'StackOverflow',
+            'CODEPEN': 'CodePen',
+            'REPLIT': 'Replit',
+            'VERCEL': 'Vercel',
+            'NETLIFY': 'Netlify',
+            'HEROKU': 'Heroku',
+            'DIGITALOCEAN': 'DigitalOcean',
+            'CLOUDFLARE': 'Cloudflare',
+            'MONGODB': 'MongoDB',
+            'POSTGRESQL': 'PostgreSQL',
+            'MYSQL': 'MySQL',
+            'SQLITE': 'SQLite',
+            'FIREBASE': 'Firebase',
+            'SUPABASE': 'Supabase',
+            'DOCKER': 'Docker',
+            'KUBERNETES': 'Kubernetes',
+            'TENSORFLOW': 'TensorFlow',
+            'PYTORCH': 'PyTorch',
+            'NODEJS': 'Node.js',
+            'NEXTJS': 'Next.js',
+            'VUEJS': 'Vue.js',
+            'NUXTJS': 'Nuxt.js',
+            'REACTJS': 'React.js',
+            'ANGULARJS': 'AngularJS',
+            'EXPRESSJS': 'Express.js',
+            'TYPESCRIPT': 'TypeScript',
+            'JAVASCRIPT': 'JavaScript',
+            'PYTHON': 'Python',
+            'GOLANG': 'GoLang',
+            'RUST': 'Rust',
+            'KOTLIN': 'Kotlin',
+            'SWIFT': 'Swift',
+            'JQUERY': 'jQuery',
+            'BOOTSTRAP': 'Bootstrap',
+            'TAILWINDCSS': 'TailwindCSS',
+            'MATERIALUI': 'MaterialUI',
+            'FIGMA': 'Figma',
+            'CANVA': 'Canva',
+            'PHOTOSHOP': 'Photoshop',
+            'ILLUSTRATOR': 'Illustrator',
+            'INDESIGN': 'InDesign',
+            'PREMIERE': 'Premiere',
+            'AFTEREFFECTS': 'AfterEffects',
+            'LIGHTROOM': 'Lightroom',
+            'PROCREATE': 'Procreate',
+            'BLENDER': 'Blender',
+            'DAVINCI': 'DaVinci',
+            'FINALCUT': 'FinalCut',
+            'GARAGEBAND': 'GarageBand',
+            'LOGICPRO': 'LogicPro',
+            'ABLETON': 'Ableton',
+            'PROTOOLS': 'ProTools',
+            'EBAY': 'eBay',
+            'PAYPAL': 'PayPal',
+            'VENMO': 'Venmo',
+            'CASHAPP': 'CashApp',
+            'COINBASE': 'Coinbase',
+            'ROBINHOOD': 'Robinhood',
+            'AIRBNB': 'Airbnb',
+            'DOORDASH': 'DoorDash',
+            'GRUBHUB': 'Grubhub',
+            'INSTACART': 'Instacart',
+            'POSTMATES': 'Postmates',
+            'UBEREATS': 'UberEats',
+            'LYFT': 'Lyft',
+            'UBER': 'Uber',
+            'TESLA': 'Tesla',
+            'SPACEX': 'SpaceX',
+            'STARLINK': 'Starlink',
+            'MCDONALDS': 'McDonald\'s',
+            'STARBUCKS': 'Starbucks',
+            'COCA-COLA': 'Coca-Cola',
+            'PEPSI': 'Pepsi',
+            'CNN': 'CNN',
+            'BBC': 'BBC',
+            'NBC': 'NBC',
+            'ABC': 'ABC',
+            'CBS': 'CBS',
+            'FOX': 'Fox',
+            'HBO': 'HBO',
+            'ESPN': 'ESPN',
+            'NPR': 'NPR',
+            'NYTIMES': 'NYTimes',
+            'WAPO': 'WaPo',
+            'BUZZFEED': 'BuzzFeed',
+            'HUFFPOST': 'HuffPost',
+            'TECHCRUNCH': 'TechCrunch',
+            'MASHABLE': 'Mashable',
+            'WIRED': 'Wired',
+            'VIMEO': 'Vimeo',
+            'DAILYMOTION': 'Dailymotion',
+            'SOUNDCLOUD': 'SoundCloud',
+            'BANDCAMP': 'Bandcamp',
+            'PATREON': 'Patreon',
+            'KICKSTARTER': 'Kickstarter',
+            'GOFUNDME': 'GoFundMe',
+            'ETSY': 'Etsy',
+            'AMAZON': 'Amazon',
+            'WALMART': 'Walmart',
+            'TARGET': 'Target',
+            'COSTCO': 'Costco',
+            'IKEA': 'IKEA',
+            'LEGO': 'LEGO',
+            'NIKE': 'Nike',
+            'ADIDAS': 'Adidas',
+            'WEBM': 'WebM',
+            'WEBP': 'WebP'
+        };
 
         // Words to keep lowercase (varies by style)
         const STYLE_LOWERCASE = {
@@ -732,8 +959,13 @@
                     // Skip if no alphabetic content
                     if (!core) return word;
 
-                    // Check if core is an abbreviation (case-insensitive)
+                    // Check if core is a brand name with specific casing
                     const upperCore = core.toUpperCase();
+                    if (BRAND_CASING[upperCore]) {
+                        return leading + BRAND_CASING[upperCore] + trailing;
+                    }
+
+                    // Check if core is an abbreviation (case-insensitive)
                     if (ABBREVIATIONS.has(upperCore)) {
                         return leading + upperCore + trailing;
                     }
@@ -742,6 +974,7 @@
                     if (core.includes('-')) {
                         const hyphenated = core.split('-').map((part, i) => {
                             const upperPart = part.toUpperCase();
+                            if (BRAND_CASING[upperPart]) return BRAND_CASING[upperPart];
                             if (ABBREVIATIONS.has(upperPart)) return upperPart;
                             if (i > 0 && lowercase.has(part.toLowerCase())) return part.toLowerCase();
                             return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
@@ -783,6 +1016,76 @@
 
         function applyLowercase() {
             applyTransform(text => text.toLowerCase());
+        }
+
+        function applySentenceCase() {
+            applyTransform(text => {
+                return text.split('\n').map(line => {
+                    // Split by sentence-ending punctuation, keeping delimiters
+                    const sentences = line.split(/([.!?]+\s*)/);
+                    let result = '';
+                    let isNewSentence = true;
+
+                    for (let i = 0; i < sentences.length; i++) {
+                        const segment = sentences[i];
+
+                        // If this is punctuation + space segment
+                        if (/^[.!?]+\s*$/.test(segment)) {
+                            result += segment;
+                            isNewSentence = true;
+                            continue;
+                        }
+
+                        if (!segment) continue;
+
+                        // Process words in the segment
+                        const words = segment.split(/(\s+)/);
+                        const processedWords = words.map((word, wordIndex) => {
+                            // Skip whitespace
+                            if (/^\s+$/.test(word)) return word;
+
+                            // Extract leading/trailing punctuation
+                            const leadingMatch = word.match(/^([^a-zA-Z0-9]*)/);
+                            const trailingMatch = word.match(/([^a-zA-Z0-9]*)$/);
+                            const leading = leadingMatch ? leadingMatch[1] : '';
+                            const trailing = trailingMatch ? trailingMatch[1] : '';
+                            const core = word.slice(leading.length, word.length - trailing.length || undefined);
+
+                            // Skip if no alphabetic content
+                            if (!core) return word;
+
+                            // Check if core is a brand name with specific casing
+                            const upperCore = core.toUpperCase();
+                            if (BRAND_CASING[upperCore]) {
+                                isNewSentence = false;
+                                return leading + BRAND_CASING[upperCore] + trailing;
+                            }
+
+                            // Check if core is an abbreviation
+                            if (ABBREVIATIONS.has(upperCore)) {
+                                isNewSentence = false;
+                                return leading + upperCore + trailing;
+                            }
+
+                            // First word of sentence gets capitalized
+                            const prevNonWhitespace = words.slice(0, wordIndex).filter(w => !/^\s+$/.test(w));
+                            const isFirstWord = isNewSentence && prevNonWhitespace.length === 0;
+
+                            if (isFirstWord) {
+                                isNewSentence = false;
+                                return leading + core.charAt(0).toUpperCase() + core.slice(1).toLowerCase() + trailing;
+                            }
+
+                            // Everything else is lowercase
+                            return leading + core.toLowerCase() + trailing;
+                        });
+
+                        result += processedWords.join('');
+                    }
+
+                    return result;
+                }).join('\n');
+            });
         }
 
         // ===== List Formatting =====
