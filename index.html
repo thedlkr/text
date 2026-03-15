@@ -228,6 +228,13 @@
         .text-theme-muted {
             color: var(--text-muted);
         }
+
+        /* Drag-and-drop overlay */
+        .drag-over {
+            outline: 2px dashed #3B82F6;
+            outline-offset: -4px;
+            background: rgba(59, 130, 246, 0.05);
+        }
     </style>
 </head>
 
@@ -417,6 +424,16 @@
             class="px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors">
             Paste MD
         </button>
+
+        <!-- Open File -->
+        <button onclick="openFile()"
+            class="px-2 py-1.5 text-sm rounded text-theme-secondary hover:text-theme-primary hover:bg-dark-gray/20 transition-colors"
+            title="Open a .md, .txt, or .html file">
+            Open
+        </button>
+
+        <!-- Hidden file input -->
+        <input type="file" id="fileInput" accept=".md,.txt,.html,.htm" class="hidden" onchange="handleFileInput(event)">
     </div>
 
     <!-- Editor Area - Simple container with max-width -->
@@ -1321,6 +1338,87 @@
                 showToast('Paste failed - check permissions');
             }
         }
+
+        // ===== File Open & Drag-and-Drop =====
+        const ALLOWED_EXTENSIONS = ['.md', '.txt', '.html', '.htm'];
+
+        function openFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileInput(event) {
+            const file = event.target.files[0];
+            if (file) {
+                loadFileContent(file);
+            }
+            // Reset so the same file can be re-opened
+            event.target.value = '';
+        }
+
+        function loadFileContent(file) {
+            const name = file.name.toLowerCase();
+            const ext = '.' + name.split('.').pop();
+
+            if (!ALLOWED_EXTENSIONS.includes(ext)) {
+                showToast('Unsupported file type. Use .md, .txt, or .html');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+
+                if (editor.value.trim() && !confirm('Replace current content with the file contents?')) {
+                    return;
+                }
+
+                editor.value = content;
+                pushHistory();
+                updateStats();
+                debouncedSave();
+                showToast('Opened: ' + file.name);
+                editor.focus();
+            };
+            reader.onerror = function() {
+                showToast('Failed to read file');
+            };
+            reader.readAsText(file);
+        }
+
+        // Drag-and-drop on the editor area
+        const mainArea = document.querySelector('main');
+
+        mainArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            mainArea.classList.add('drag-over');
+        });
+
+        mainArea.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            mainArea.classList.add('drag-over');
+        });
+
+        mainArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Only remove if leaving the main area entirely
+            if (!mainArea.contains(e.relatedTarget)) {
+                mainArea.classList.remove('drag-over');
+            }
+        });
+
+        mainArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            mainArea.classList.remove('drag-over');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                loadFileContent(files[0]);
+            }
+        });
 
 
         // ===== Toast Notification =====
