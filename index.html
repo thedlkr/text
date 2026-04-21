@@ -1176,16 +1176,49 @@
         }
 
         // ===== Slugify =====
+        // SEO stop words: low-value words Google ignores in URLs. Dropping them
+        // shortens slugs and concentrates keyword weight (Yoast-style list).
+        const SEO_STOP_WORDS = new Set([
+            'a','about','above','after','again','against','all','am','an','and','any','are','as','at',
+            'be','because','been','before','being','below','between','both','but','by',
+            'can','could','did','do','does','doing','down','during',
+            'each','few','for','from','further',
+            'had','has','have','having','he','her','here','hers','herself','him','himself','his','how',
+            'i','if','in','into','is','it','its','itself',
+            'just','me','more','most','my','myself',
+            'no','nor','not','of','off','on','once','only','or','other','ought','our','ours','ourselves','out','over','own',
+            'same','she','should','so','some','such',
+            'than','that','the','their','theirs','them','themselves','then','there','these','they','this','those','through','to','too',
+            'under','until','up',
+            'very',
+            'was','we','were','what','when','where','which','while','who','whom','why','will','with','would',
+            'you','your','yours','yourself','yourselves',
+            // Common contractions after apostrophe stripping
+            'im','ive','id','ill','youre','youve','youd','youll','hes','shes','thats','whats','whos',
+            'theyre','theyve','theyd','theyll','weve','wed','wont','dont','doesnt','didnt','isnt','arent',
+            'wasnt','werent','hasnt','havent','hadnt','cant','couldnt','wouldnt','shouldnt','lets'
+        ]);
+
         function applySlugify() {
             applyTransform(text => {
-                return text
+                const cleaned = text
                     .toLowerCase()
                     .normalize('NFD')
                     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-                    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-                    .replace(/\s+/g, '-') // Spaces to hyphens
-                    .replace(/-+/g, '-') // Multiple hyphens to single
-                    .replace(/^-|-$/g, ''); // Trim hyphens
+                    .replace(/['\u2019\u2018]/g, '') // Strip apostrophes so "don't" -> "dont"
+                    .replace(/[^a-z0-9\s-]/g, ' '); // Other specials -> space (preserves word boundaries)
+
+                // Split on whitespace or hyphens into word tokens
+                const tokens = cleaned.split(/[\s-]+/).filter(Boolean);
+
+                // Drop SEO stop words
+                const filtered = tokens.filter(t => !SEO_STOP_WORDS.has(t));
+
+                // If stop-word removal would leave the slug empty (e.g. "The"),
+                // fall back to the original tokens rather than returning ''.
+                const finalTokens = filtered.length > 0 ? filtered : tokens;
+
+                return finalTokens.join('-');
             });
         }
 
